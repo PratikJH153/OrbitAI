@@ -1,103 +1,249 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import dynamic from "next/dynamic";
+import ProfileBadge from '@/components/ui/ProfileBadge';
+import { Navbar, addMapTab } from '@/components/ui/Navbar';
+import useStore from '@/store/useStore';
+
+// Dynamically import components to avoid hydration issues
+const LeftPanel = dynamic(() => import("@/components/left-panel/LeftPanel"), {
+  ssr: false,
+});
+const MiddlePanel = dynamic(() => import("@/components/middle-panel/MiddlePanel"), {
+  ssr: false,
+});
+const RightPanel = dynamic(() => import("@/components/right-panel/RightPanel"), {
+  ssr: false,
+});
+const MapView = dynamic(() => import("@/components/map/MapView"), {
+  ssr: false,
+});
+const SessionEndPrompt = dynamic(() => import("@/components/ui/SessionEndPrompt"), {
+  ssr: false,
+});
+const WelcomeScreen = dynamic(() => import("@/components/welcome/WelcomeScreen"), {
+  ssr: false,
+});
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [showActionPlan, setShowActionPlan] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [showProblem, setShowProblem] = useState(false);
+  const [showResources, setShowResources] = useState(false);
+  const { activeTabIndex, addTask, toggleTaskCompletion, setRightPanelVisible } = useStore();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+  // Function to handle showing the action plan
+  const handleShowActionPlan = () => {
+    setShowActionPlan(true);
+  };
+
+  // Function to hide the action plan
+  const handleHideActionPlan = () => {
+    setShowActionPlan(false);
+  };
+
+  // Function to handle group project questions and show map
+  const handleGroupProjectQuestion = () => {
+    // Add the map tab if it doesn't exist
+    addMapTab();
+  };
+
+  // Function to handle adding a task
+  const handleAddTask = (title: string, priority: 'low' | 'medium' | 'high') => {
+    // Find the first assignment or create one if none exists
+    const assignments = useStore.getState().assignments;
+    if (assignments.length > 0) {
+      const assignmentId = assignments[0].id;
+      addTask(assignmentId, title, priority);
+    } else {
+      // Create a new assignment first, then add the task
+      useStore.getState().addAssignment(
+        "Today's Tasks",
+        "Tasks for today",
+        new Date().toISOString()
+      );
+      // Get the newly created assignment
+      const newAssignmentId = useStore.getState().assignments[0].id;
+
+      // Now add the task to the new assignment
+      addTask(newAssignmentId, title, priority);
+    }
+  };
+
+  // Function to handle completing a task
+  const handleCompleteTask = () => {
+    // Find the first incomplete task and complete it
+    const assignments = useStore.getState().assignments;
+    if (assignments.length > 0) {
+      const assignment = assignments[0];
+      const incompleteTasks = assignment.tasks.filter(task => !task.completed);
+
+      if (incompleteTasks.length > 0) {
+        toggleTaskCompletion(assignment.id, incompleteTasks[0].id);
+      }
+    }
+  };
+
+  // Function to handle showing a problem
+  const handleShowProblem = () => {
+    setRightPanelVisible(true);
+    setShowProblem(true);
+    setShowResources(false);
+
+    // Add a problem image to the right panel
+    useStore.getState().addAIResponse(
+      "Here's the physics problem you're working on:",
+      [
+        {
+          id: '1',
+          title: 'Physics Problem',
+          content: 'This problem involves calculating the trajectory of a projectile.',
+        }
+      ],
+      "Showing the physics problem",
+      false,
+      false,
+      undefined,
+      ["https://www.physicsclassroom.com/Class/vectors/u3l2a4.gif"]
+    );
+  };
+
+  // Function to handle showing resources
+  const handleShowResources = () => {
+    setRightPanelVisible(true);
+    setShowResources(true);
+    setShowProblem(false);
+
+    // Add resources to the right panel with highlighted formulas
+    useStore.getState().addAIResponse(
+      "Here are some resources that might help you:",
+      [
+        {
+          id: '1',
+          title: 'Projectile Motion Formulas',
+          content: 'In projectile motion, the relationship between velocity (v), displacement (d), and time (t) is described by kinematic equations. For constant velocity in the x-direction, the displacement is <span class="font-bold text-primary">d = v * t</span>. In the y-direction, where gravity acts, the displacement is <span class="font-bold text-primary">d = v₀ * t + (1/2) * a * t²</span>, where v₀ is the initial velocity, and a is the acceleration due to gravity.',
+        },
+        {
+          id: '2',
+          title: 'Visual Representation',
+          content: '<div class="mt-2 mb-2"><img src="https://s3-us-west-2.amazonaws.com/courses-images/wp-content/uploads/sites/5667/2021/08/21163018/3-4-6.jpeg" alt="Projectile Motion Diagram" class="rounded-lg w-full" /></div>',
+        },
+        {
+          id: '3',
+          title: 'Additional Resources',
+          content: 'For more detailed explanations and examples of projectile motion problems',
+          url: 'https://www.khanacademy.org/science/physics/two-dimensional-motion/two-dimensional-projectile-mot/a/what-is-projectile-motion'
+        }
+      ],
+      "Showing educational resources on projectile motion",
+      false,
+      true,
+      "https://www.youtube.com/embed/fvS9ZGk_HlY"
+    );
+  };
+
+  // Function to handle Enter key press on welcome screen
+  const handleEnterPress = () => {
+    setShowWelcome(false);
+  };
+
+  // Function to handle closing the session and showing welcome screen
+  const handleCloseSession = () => {
+    setShowWelcome(true);
+  };
+
+  return (
+    <AnimatePresence mode="wait">
+      {showWelcome ? (
+        <motion.div
+          key="welcome"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <WelcomeScreen onEnter={handleEnterPress} />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="main-interface"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="min-h-screen p-6"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          <header className="mb-6 flex justify-between items-center">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-white">
+              Welcome Back, Michael!
+            </h1>
+            <ProfileBadge />
+          </header>
+
+          <Navbar />
+
+          <main className="relative h-[calc(100vh-200px)]">
+            {activeTabIndex === 0 ? (
+              <>
+                <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 h-full transition-all duration-500"
+                  style={{
+                    marginLeft: showActionPlan ? '520px' : '0',
+                    width: showActionPlan ? 'calc(100% - 520px)' : '100%'
+                  }}
+                >
+                  <section className="glass p-6 rounded-xl overflow-hidden">
+                    <MiddlePanel
+                      onShowActionPlan={handleShowActionPlan}
+                      onGroupProjectQuestion={handleGroupProjectQuestion}
+                      onAddTask={handleAddTask}
+                      onCompleteTask={handleCompleteTask}
+                      onShowProblem={handleShowProblem}
+                      onShowResources={handleShowResources}
+                      onCloseSession={handleCloseSession}
+                    />
+                  </section>
+
+                  <AnimatePresence>
+                    <section className="glass p-6 rounded-xl overflow-hidden">
+                      <RightPanel />
+                    </section>
+                  </AnimatePresence>
+                </div>
+
+                <AnimatePresence>
+                  {showActionPlan && (
+                    <motion.div
+                      initial={{ x: -350, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      exit={{ x: -350, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute top-0 left-0 h-full w-[500px]"
+                    >
+                      <div className="glass p-6 rounded-xl overflow-hidden h-full">
+                        <div className="flex justify-end mb-2">
+                          <button
+                            onClick={handleHideActionPlan}
+                            className="text-foreground/50 hover:text-foreground transition-colors"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        <LeftPanel />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : activeTabIndex === 1 ? (
+              <MapView />
+            ) : null}
+          </main>
+
+          {/* Session End Prompt */}
+          <SessionEndPrompt />
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

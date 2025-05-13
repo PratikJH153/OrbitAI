@@ -1,8 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Minecraft-inspired color palette */
+  --background: #5c4033; /* Brown earth */
+  --foreground: #f9f3e5; /* Light cream */
+  --primary: #8b5a2b;    /* Wooden planks */
+  --secondary: #567d46;  /* Grass green */
+  --accent: #d9a066;     /* Light wood */
+  --panel-bg: rgba(92, 64, 51, 0.85);
+  --glass-border: rgba(139, 90, 43, 0.6);
+  --glass-shadow: rgba(0, 0, 0, 0.25);
+  --dirt-dark: #3b2616;  /* Dark dirt */
+  --dirt-light: #6b4226; /* Light dirt */
+  --stone: #7a7a7a;      /* Stone gray */
+  --wood-dark: #6b4423;  /* Dark wood */
 }
 
 @theme inline {
@@ -12,15 +23,154 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Force dark theme for Minecraft look */
+:root {
+  --background: #3b2616; /* Dark dirt background */
+  --foreground: #f9f3e5; /* Light cream text */
+  --primary: #8b5a2b;    /* Wooden planks */
+  --secondary: #567d46;  /* Grass green */
+  --accent: #d9a066;     /* Light wood */
+  --panel-bg: rgba(92, 64, 51, 0.9);
+  --glass-border: rgba(139, 90, 43, 0.8);
+  --glass-shadow: rgba(0, 0, 0, 0.3);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background-image:
+    url("data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236b4226' fill-opacity='0.4'%3E%3Cpath d='M8 16c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zm24 16c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6zm24 16c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-2c3.314 0 6-2.686 6-6s-2.686-6-6-6-6 2.686-6 6 2.686 6 6 6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(to bottom, var(--dirt-dark), var(--background) 100px);
+  background-attachment: fixed;
+  position: relative;
+  font-size: 18px; /* Increased base font size */
+}
+
+/* Minecraft-inspired dirt texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image:
+    repeating-linear-gradient(
+      rgba(59, 38, 22, 0.1) 0px,
+      rgba(59, 38, 22, 0.1) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Minecraft-inspired panel styles */
+.glass {
+  background: var(--panel-bg);
+  border: 4px solid var(--glass-border);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+              0 4px 0 0 var(--dirt-dark),
+              0 8px 16px 0 var(--glass-shadow);
+  border-radius: 4px;
+  image-rendering: pixelated;
+  position: relative;
+}
+
+/* Add subtle texture to panels */
+.glass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M0 0h20v20H0V0zm10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zm0-2a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/g%3E%3C/svg%3E");
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* Minecraft-inspired scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--dirt-dark);
+  border: 2px solid var(--wood-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border: 2px solid var(--wood-dark);
+  image-rendering: pixelated;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
+}
+
+/* Minecraft-inspired button styles */
+button {
+  transition: all 0.1s ease-out;
+}
+
+button:active {
+  transform: translateY(2px);
+}
+
+/* Minecraft-style text */
+h1, h2, h3, h4, h5, h6 {
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.5px;
+}
+
+/* Larger heading sizes */
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1.1rem;
+}
+
+/* Minecraft-style input fields */
+input, textarea, select {
+  background-color: var(--dirt-dark) !important;
+  border: 2px solid var(--wood-dark) !important;
+  color: var(--foreground) !important;
+  font-size: 1.1rem !important;
+  padding: 0.75rem 1rem !important;
+  line-height: 1.5 !important;
+}
+
+/* Larger buttons */
+button {
+  font-size: 1.1rem !important;
+  padding: 0.5rem 1rem !important;
+}
+
+/* Pixelated images for Minecraft feel */
+img {
+  image-rendering: pixelated;
 }

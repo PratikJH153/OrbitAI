@@ -1,0 +1,31 @@
+# Core API dependencies
+fastapi>=0.95.0
+uvicorn>=0.22.0
+python-multipart>=0.0.6
+
+# AI components
+openai-whisper>=20231117
+openai>=1.3.0
+ollama>=0.1.0
+sentence-transformers>=2.2.2
+faiss-cpu>=1.7.4  # or faiss-gpu if you have CUDA
+
+# Audio processing
+sounddevice>=0.4.6
+soundfile>=0.12.1
+pyaudio>=0.2.13
+
+# Utilities
+numpy>=1.24.0
+torch>=2.0.0
+python-dotenv>=1.0.0
+ffmpeg-python>=0.2.0
+
+# Original dependencies
+opencv-python
+langchain
+langchain-openai
+langchain_google_genai
+langchain-community
+SpeechRecognition
+SpeechRecognition[whisper-local]
